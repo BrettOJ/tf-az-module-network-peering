@@ -67,21 +67,18 @@ variable "triggers" {
   default = {}
 }
 
+
 variable "naming_convention_info" {
-  description = "A mapping of naming convention information."
-  type = map
-  default = {
-    name = {
-      site = "site"
-      env = "env"
-      app = "app"
-      name = "name"
-      dest = "dest"
-    }
-  }
+  description = "(Required) Specify the naming convention information to the resource."
+  type = object({
+    name         = string
+    site = string
+    app          = string
+    env          = string
+  })
 }
 
 variable "tags" {
-  description = "A mapping of tags to assign to the resource."
-  type = map
+  type        = map(string)
+  description = "Specify the tags to the resource. Additional tags will be appended based on the convention"
 }
