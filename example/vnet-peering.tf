@@ -1,32 +1,42 @@
-resource "azurerm_resource_group" "example" {
-  name     = "peeredvnets-rg"
-  location = "West Europe"
+locals {
+  naming_convention_info = {
+    name         = "001"
+    site          = "dev"
+    env  = "boj"
+    app = "web"
+    dest     = "1"
+  }
+  tags = {
+    "Environment" = "Dev"
+    "Owner"       = "DevOps"
+    "Project"     = "MyProject"
+  }
 }
 
-resource "azurerm_virtual_network" "example-1" {
-  name                = "peternetwork1"
-  resource_group_name = azurerm_resource_group.example.name
-  address_space       = ["10.0.1.0/24"]
-  location            = azurerm_resource_group.example.location
+
+module "resource_groups" {
+  source = "git::https://github.com/BrettOJ/tf-az-module-resource-group?ref=main"
+  resource_groups = {
+    vnp = {
+      name                   = var.resource_group_name
+      location               = var.location
+      naming_convention_info = local.naming_convention_info
+      tags                   = local.tags
+    }
+  }
 }
 
-resource "azurerm_virtual_network" "example-2" {
-  name                = "peternetwork2"
-  resource_group_name = azurerm_resource_group.example.name
-  address_space       = ["10.0.2.0/24"]
-  location            = azurerm_resource_group.example.location
-}
-
-resource "azurerm_virtual_network_peering" "example-1" {
-  name                      = "peer1to2"
-  resource_group_name       = azurerm_resource_group.example.name
-  virtual_network_name      = azurerm_virtual_network.example-1.name
-  remote_virtual_network_id = azurerm_virtual_network.example-2.id
-}
-
-resource "azurerm_virtual_network_peering" "example-2" {
-  name                      = "peer2to1"
-  resource_group_name       = azurerm_resource_group.example.name
-  virtual_network_name      = azurerm_virtual_network.example-2.name
-  remote_virtual_network_id = azurerm_virtual_network.example-1.id
+module "azure_virtual_network_peering" {
+  source = "git::https://github.com/BrettOJ/tf-az-module-network-peering?ref=main"
+  resource_group_name          = module.resource_groups.resource_group_output[0].name
+  virtual_network_name         = var.virtual_network_name
+  remote_virtual_network_id    = var.remote_virtual_network_id
+  allow_virtual_network_access = var.allow_virtual_network_access
+  allow_forwarded_traffic      = var.allow_forwarded_traffic
+  allow_gateway_transit        = var.allow_gateway_transit 
+  use_remote_gateways          = var.use_remote_gateways
+  local_subnet_names           = var.local_subnet_names
+  remote_subnet_names          = var.remote_subnet_names
+  only_ipv6_peering_enabled    = var.only_ipv6_peering_enabled
+  triggers = var.triggers
 }
