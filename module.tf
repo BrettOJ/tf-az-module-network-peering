@@ -1,5 +1,5 @@
 resource "azurerm_virtual_network_peering" "peering" {
-  name                         = module.vnet_resource_name.naming_convention_output[var.naming_convention_info.name].names.0
+  name                         = module.vnp_name.naming_convention_output[var.naming_convention_info.name].names.0
   resource_group_name          = var.resource_group_name
   virtual_network_name         = var.virtual_network_name
   remote_virtual_network_id    = var.remote_virtual_network_id
